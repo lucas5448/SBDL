@@ -2,15 +2,21 @@ pipeline {
     agent any
 
     stages {
+        stage('Install Pipenv') {
+            steps {
+                // Ensure pipenv is installed
+                bat 'pip install pipenv'
+            }
+        }
         stage('Build') {
             steps {
-                // Ensure pipenv is installed and working
+                // Install dependencies using pipenv
                 bat 'pipenv install --dev'
             }
         }
         stage('Test') {
             steps {
-                // Ensure pytest is installed and available
+                // Run tests using pipenv
                 bat 'pipenv run pytest'
             }
         }
@@ -22,7 +28,7 @@ pipeline {
                 }
             }
             steps {
-                // Ensure packaging works and necessary files are included
+                // Package the project into a zip file
                 bat 'zip -r sbdl.zip lib'
             }
         }
@@ -31,7 +37,7 @@ pipeline {
                 branch 'release'
             }
             steps {
-                // Ensure SCP works and paths are correct
+                // Release the packaged files to the QA environment
                 bat "scp -i /home/prashant/cred/edge-node_key.pem -o 'StrictHostKeyChecking no' -r sbdl.zip log4j.properties sbdl_main.py sbdl_submit.sh conf prashant@40.117.123.105:/home/prashant/sbdl-qa"
             }
         }
@@ -40,7 +46,7 @@ pipeline {
                 branch 'master'
             }
             steps {
-                // Ensure SCP works and paths are correct
+                // Deploy the packaged files to the production environment
                 bat "scp -i /home/prashant/cred/edge-node_key.pem -o 'StrictHostKeyChecking no' -r sbdl.zip log4j.properties sbdl_main.py sbdl_submit.sh conf prashant@40.117.123.105:/home/prashant/sbdl-prod"
             }
         }
